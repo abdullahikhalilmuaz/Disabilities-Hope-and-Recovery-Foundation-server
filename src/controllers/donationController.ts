@@ -85,7 +85,7 @@ export const initializeDonation = async (req: Request, res: Response) => {
  */
 export const verifyDonation = async (req: Request, res: Response) => {
   try {
-    const { reference } = req.params;
+    const reference = req.params.reference as string;
 
     const donation = await Donation.findOne({ reference });
 
