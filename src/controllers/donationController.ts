@@ -79,7 +79,7 @@ export const initializeDonation = async (req: Request, res: Response) => {
  * Verify Donation
  * GET /api/donations/verify/:reference
  *
- * Called by the frontend's /donate/callback page after Paystack redirects
+ * Called by the frontend's /donate/success page after Paystack redirects
  * the donor back. If the webhook already confirmed this donation, we skip
  * calling Paystack again and just return what's in the DB.
  */
@@ -103,10 +103,31 @@ export const verifyDonation = async (req: Request, res: Response) => {
 
     const verification = await verifyTransaction(reference);
     const payment = verification.data;
+    const paystackStatus = payment.status as string;
 
-    donation.status = payment.status === "success" ? "success" : "failed";
+    if (paystackStatus === "success") {
+      donation.status = "success";
+    } else if (
+      paystackStatus === "failed" ||
+      paystackStatus === "abandoned" ||
+      paystackStatus === "reversed"
+    ) {
+      // Definitive non-success outcome.
+      donation.status = "failed";
+    }
+    // Anything else (e.g. "pending", "queued" — typical for bank transfer
+    // that hasn't cleared yet) is left as "pending". The frontend shows a
+    // "still processing" message, and the webhook will update it for real
+    // once Paystack confirms either way.
+
     if (payment.channel) donation.channel = payment.channel;
     if (payment.paid_at) donation.paidAt = payment.paid_at;
+    if (payment.authorization?.brand)
+      donation.cardBrand = payment.authorization.brand;
+    if (payment.authorization?.last4)
+      donation.cardLast4 = payment.authorization.last4;
+    if (payment.gateway_response)
+      donation.gatewayResponse = payment.gateway_response;
 
     await donation.save();
 

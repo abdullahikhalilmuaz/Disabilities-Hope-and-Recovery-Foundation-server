@@ -26,7 +26,7 @@ export interface InitializeDonationResponse {
 }
 
 export async function initializeDonation(
-  payload: InitializeDonationPayload
+  payload: InitializeDonationPayload,
 ): Promise<InitializeDonationResponse> {
   const res = await fetch(`${API_BASE_URL}/api/donations/initialize`, {
     method: "POST",
@@ -53,6 +53,11 @@ export interface DonationRecord {
   status: "pending" | "success" | "failed";
   donationType: DonationType;
   message?: string;
+  channel?: string;
+  cardBrand?: string;
+  cardLast4?: string;
+  gatewayResponse?: string;
+  paidAt?: string;
   createdAt: string;
 }
 
@@ -63,10 +68,10 @@ export interface VerifyDonationResponse {
 }
 
 export async function verifyDonation(
-  reference: string
+  reference: string,
 ): Promise<VerifyDonationResponse> {
   const res = await fetch(
-    `${API_BASE_URL}/api/donations/verify/${encodeURIComponent(reference)}`
+    `${API_BASE_URL}/api/donations/verify/${encodeURIComponent(reference)}`,
   );
 
   const data = await res.json();

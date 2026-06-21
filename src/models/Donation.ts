@@ -48,13 +48,25 @@ const donationSchema = new Schema(
       type: String, // e.g. "card", "bank_transfer" — set once payment confirms
     },
 
+    cardBrand: {
+      type: String, // e.g. "visa", "mastercard" — only set for card payments
+    },
+
+    cardLast4: {
+      type: String, // last 4 digits — only set for card payments
+    },
+
+    gatewayResponse: {
+      type: String, // Paystack's human-readable outcome, e.g. "Declined"
+    },
+
     paidAt: {
       type: Date,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export default mongoose.model("Donation", donationSchema);

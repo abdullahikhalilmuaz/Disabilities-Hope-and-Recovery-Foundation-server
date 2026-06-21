@@ -19,9 +19,7 @@ const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || "";
  */
 export const paystackWebhook = async (req: Request, res: Response) => {
   try {
-    const signature = req.headers["x-paystack-signature"] as
-      | string
-      | undefined;
+    const signature = req.headers["x-paystack-signature"] as string | undefined;
 
     if (!signature || !PAYSTACK_SECRET_KEY) {
       return res.sendStatus(400);
@@ -50,14 +48,21 @@ export const paystackWebhook = async (req: Request, res: Response) => {
           status: "success",
           paidAt: payment.paid_at || payment.paidAt || new Date(),
           channel: payment.channel,
-        }
+          cardBrand: payment.authorization?.brand,
+          cardLast4: payment.authorization?.last4,
+          gatewayResponse: payment.gateway_response,
+        },
       );
     } else if (event.event === "charge.failed") {
       const payment = event.data;
 
       await Donation.findOneAndUpdate(
         { reference: payment.reference },
-        { status: "failed" }
+        {
+          status: "failed",
+          channel: payment.channel,
+          gatewayResponse: payment.gateway_response,
+        },
       );
     }
     // Other event types (transfer.success, subscription.* etc.) are

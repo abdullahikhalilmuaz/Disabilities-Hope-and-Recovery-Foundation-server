@@ -6,7 +6,7 @@ import {
   getAllDonations,
 } from "../controllers/donationController";
 
-import { protect } from "../middleware/auth";
+// import { protect } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -19,6 +19,6 @@ router.post("/initialize", initializeDonation);
 router.get("/verify/:reference", verifyDonation);
 
 // Admin only — list all donations
-router.get("/", protect, getAllDonations);
+router.get("/", getAllDonations);
 
 export default router;
